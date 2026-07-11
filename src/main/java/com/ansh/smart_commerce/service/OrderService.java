@@ -372,7 +372,7 @@ Order savedOrder = orderRepository.save(order);
             headerTable.setWidthPercentage(100);
             headerTable.setSpacingAfter(20);
 
-            PdfPCell cell1 = new PdfPCell(new Paragraph("SMART COMMERCE", mainTitleFont));
+            PdfPCell cell1 = new PdfPCell(new Paragraph("TechHeaven", mainTitleFont));
             cell1.setBorder(PdfPCell.NO_BORDER);
             cell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
             headerTable.addCell(cell1);
@@ -514,7 +514,7 @@ Order savedOrder = orderRepository.save(order);
             document.add(line);
 
             // 6. Footer
-            Paragraph footer = new Paragraph("Thank you for shopping with Smart Commerce.\nThis invoice is system generated.", footerFont);
+            Paragraph footer = new Paragraph("Thank you for shopping with TechHeaven.\nThis invoice is system generated.", footerFont);
             footer.setAlignment(Element.ALIGN_CENTER);
             document.add(footer);
 
