@@ -57,7 +57,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://techheaven.vercel.app",
+                "https://techheaven-git-master-suryansh-varma-ks-projects.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of(
