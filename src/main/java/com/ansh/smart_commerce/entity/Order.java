@@ -41,13 +41,13 @@ public class Order {
 
     private double totalAmount;
     
-    @Column(nullable = false)
-    private double subtotal;
-
-    @Column(nullable = false)
-    private double discountAmount = 0;
-
-    @Column(nullable = false)
+    @Column(columnDefinition = "float8 default 0.0")
+    private double subtotal = 0.0;
+    
+    @Column(columnDefinition = "float8 default 0.0")
+    private double discountAmount = 0.0;
+    
+    @Column(columnDefinition = "float8 default 0.0")
     private double serviceFee = 0.0;
 
     private String couponCode;
