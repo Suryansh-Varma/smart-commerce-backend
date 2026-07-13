@@ -34,8 +34,9 @@ Smart Commerce is a robust e-commerce backend demonstrating enterprise-grade des
 - **Backend Single Source of Truth**: All financial, coupon, and address calculations are handled purely server-side.
 - **Order Status State Machine**: Stock is deducted only on order confirmation and restored on cancellation — never at placement time.
 - **Address & Payment Snapshotting**: Guarantees database reference integrity by taking a text-based address snapshot at order placement time.
-- **PDF Generation Engine**: Streams high-fidelity binary PDF invoices generated directly by the server.
+- **PDF Generation Engine**: Streams high-fidelity binary PDF invoices generated directly by the server, featuring a modern, premium design.
 - **Stateless Authentication**: Endpoints protected via custom Spring Security Filters and stateless JWT tokens.
+- **AI Chat Endpoint**: A secure backend endpoint integrating Gemini AI to provide product and order assistance exclusively to authenticated users.
 - **Admin Control Plane**: A dedicated admin API layer enables privileged management of products, users, orders, coupons, and inventory.
 
 ---
@@ -117,10 +118,11 @@ flowchart TD
 - Product browsing with real-time stock-aware availability indicators.
 - Shopping cart management (add, update, remove items).
 - Coupon application with discount simulation before checkout.
-- Secure order placement with shipping address snapshot and payment record.
+- Secure order placement with shipping address snapshot, 0.18% platform service fee, and payment record.
 - Order history and detailed order view.
-- PDF invoice download per order.
+- Premium PDF invoice download per order.
 - Order cancellation (PENDING orders only; confirmed orders require admin action).
+- AI Chat assistant integration for authenticated users.
 
 ### Admin Features
 - **Dashboard**: Real-time summary of total users, orders, revenue, and pending order count.
@@ -185,6 +187,7 @@ CREATE TABLE orders (
     status            VARCHAR(50),
     subtotal          DOUBLE PRECISION NOT NULL,
     discount_amount   DOUBLE PRECISION DEFAULT 0.0,
+    service_fee       DOUBLE PRECISION DEFAULT 0.0,
     coupon_code       VARCHAR(255),
     total_amount      DOUBLE PRECISION NOT NULL,
     shipping_name     VARCHAR(255),
@@ -257,6 +260,11 @@ Authorization: Bearer <token>
 | GET | `/orders/{orderId}/invoice` | Download invoice PDF (`application/pdf`) |
 | PATCH | `/orders/{orderId}/cancel` | Cancel an order |
 | PATCH | `/orders/{orderId}/status` | Update order status *(admin only)* |
+
+### AI Chat
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/chat` | Send a prompt to the AI (authenticated users only) |
 
 ### Coupons
 | Method | Endpoint | Description |

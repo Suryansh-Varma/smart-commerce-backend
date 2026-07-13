@@ -47,6 +47,9 @@ public class Order {
     @Column(nullable = false)
     private double discountAmount = 0;
 
+    @Column(nullable = false)
+    private double serviceFee = 0.0;
+
     private String couponCode;
 
     private String shippingName;
@@ -63,7 +66,7 @@ public class Order {
     public Order() {
     }
 
-    public Order(User user, LocalDateTime orderDate, double totalAmount, OrderStatus status, String couponCode, double subtotal, double discountAmount) {
+    public Order(User user, LocalDateTime orderDate, double totalAmount, OrderStatus status, String couponCode, double subtotal, double discountAmount, double serviceFee) {
         this.user = user;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
@@ -71,6 +74,7 @@ public class Order {
         this.couponCode = couponCode;
         this.subtotal = subtotal;
         this.discountAmount = discountAmount;
+        this.serviceFee = serviceFee;
     }
 
   
@@ -129,6 +133,12 @@ public class Order {
     }
     public void setDiscountAmount(double discountAmount) {
         this.discountAmount = discountAmount;
+    }
+    public double getServiceFee() {
+        return serviceFee;
+    }
+    public void setServiceFee(double serviceFee) {
+        this.serviceFee = serviceFee;
     }
     public String getCouponCode() {
         return couponCode;

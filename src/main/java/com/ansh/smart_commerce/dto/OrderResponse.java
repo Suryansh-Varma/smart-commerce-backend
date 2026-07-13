@@ -15,6 +15,7 @@ public class OrderResponse {
     private String couponCode;
     private double subtotal;
     private double discountAmount;
+    private double serviceFee;
 
     private String shippingName;
     private String shippingPhone;
@@ -29,7 +30,7 @@ public class OrderResponse {
 
     public OrderResponse(Long orderId, LocalDateTime orderDate,
                          double totalAmount, OrderStatus status,
-                         String couponCode, double subtotal, double discountAmount,
+                         String couponCode, double subtotal, double discountAmount, double serviceFee,
                          List<OrderItemResponse> items) {
         this.orderId = orderId;
         this.orderDate = orderDate;
@@ -38,6 +39,7 @@ public class OrderResponse {
         this.couponCode = couponCode;
         this.subtotal = subtotal;
         this.discountAmount = discountAmount;
+        this.serviceFee = serviceFee;
         this.items = items;
     }
 
@@ -103,6 +105,14 @@ public class OrderResponse {
 
     public void setDiscountAmount(double discountAmount) {
         this.discountAmount = discountAmount;
+    }
+
+    public double getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(double serviceFee) {
+        this.serviceFee = serviceFee;
     }
 
     public String getShippingName() {
