@@ -6,7 +6,7 @@ import com.ansh.smart_commerce.enums.DiscountType;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "coupons")
@@ -24,11 +24,11 @@ public class Coupon {
     @Column(nullable = false)
     private DiscountType discountType;
 
-    @Positive
+    @PositiveOrZero
     @Column(nullable = false)
     private double discountValue;
 
-    @Positive
+    @PositiveOrZero
     private double minimumAmount;
 
     @Column(nullable = false)

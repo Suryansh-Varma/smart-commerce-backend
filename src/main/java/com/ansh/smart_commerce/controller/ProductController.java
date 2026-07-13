@@ -43,6 +43,20 @@ public class ProductController {
                 ApiResponse.success("Products retrieved successfully", productService.getAllProducts()));
     }
 
+    @GetMapping("/low-stock")
+    public ResponseEntity<ApiResponse<List<Product>>> getLowStockProducts() {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+                !("root".equalsIgnoreCase(authentication.getName()) || 
+                  "root@techheaven.com".equalsIgnoreCase(authentication.getName()) ||
+                  "root@teachheaven.com".equalsIgnoreCase(authentication.getName()))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only root user can view low stock notifications", null));
+        }
+        return ResponseEntity.ok(
+                ApiResponse.success("Low stock products retrieved", productService.getLowStockProducts()));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Product>> getByProductId(@PathVariable long id) {
         return ResponseEntity.ok(

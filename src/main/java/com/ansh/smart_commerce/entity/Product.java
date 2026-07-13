@@ -12,16 +12,23 @@ public class Product {
     private String name;
     @Positive
     private double cost;
-    @Positive
+    @PositiveOrZero
     private int stock;
     private String category;
     private String imageUrl;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("isAvailable")
+    @Column(columnDefinition = "boolean default true")
+    private Boolean isAvailable = true;
+
     public Product(){}
     public Product(String name, double cost, int stock, String category, String imageUrl) {
         this.name = name;
         this.cost = cost;
         this.stock = stock;
+        this.category = category;
         this.imageUrl = imageUrl;
+        this.isAvailable = true;
     }
     public long getId(){
         return id;
@@ -58,6 +65,13 @@ public class Product {
     }
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    @com.fasterxml.jackson.annotation.JsonProperty("isAvailable")
+    public Boolean isAvailable() {
+        return isAvailable != null ? isAvailable : true;
+    }
+    public void setAvailable(Boolean available) {
+        this.isAvailable = available != null ? available : true;
     }
 
 }

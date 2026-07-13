@@ -5,7 +5,7 @@ import com.ansh.smart_commerce.enums.DiscountType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 
@@ -17,10 +17,10 @@ public class CouponRequest {
     @NotNull(message = "Discount type is required")
     private DiscountType discountType;
 
-    @Positive(message = "Discount value must be positive")
+    @PositiveOrZero(message = "Discount value must be positive or zero")
     private double discountValue;
 
-    @Positive(message = "Minimum amount must be positive")
+    @PositiveOrZero(message = "Minimum amount must be positive or zero")
     private double minimumAmount;
 
     @NotNull(message = "Expiry date is required")

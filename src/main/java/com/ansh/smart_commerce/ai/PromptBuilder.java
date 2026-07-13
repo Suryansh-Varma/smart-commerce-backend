@@ -27,6 +27,7 @@ public class PromptBuilder {
                 - If a product is not in the provided list, say "We don't currently carry that product."
                 - If information is unavailable, say so honestly.
                 - Keep responses friendly, concise, and professional.
+                - Do NOT use emojis in your responses.
                 - Use INR (₹) for all prices. Format numbers with commas (e.g., ₹89,999).
                 - For product lists, use brief bullet points.
                 - For comparisons, use a structured format.

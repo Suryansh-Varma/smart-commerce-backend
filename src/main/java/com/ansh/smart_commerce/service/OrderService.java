@@ -95,6 +95,9 @@ public class OrderService {
                 throw new InsufficientStockException(
                         item.getProduct().getName(), item.getQuantity(), item.getProduct().getStock());
             }
+            Product product = item.getProduct();
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepository.save(product);
         }
 
         Order order = new Order(user, LocalDateTime.now(), 0.0, OrderStatus.PENDING, null, 0.0, 0.0, 0.0);
@@ -208,6 +211,8 @@ Order savedOrder = orderRepository.save(order);
                         product.getName(), requestedQty, product.getStock());
                 throw new InsufficientStockException(product.getName(), requestedQty, product.getStock());
             }
+            product.setStock(product.getStock() - requestedQty);
+            productRepository.save(product);
 
             double unitPrice = product.getCost();
             double subtotal = unitPrice * requestedQty;
@@ -305,13 +310,11 @@ Order savedOrder = orderRepository.save(order);
             throw new RuntimeException("Order " + orderId + " is already cancelled.");
         }
 
-        // Only restore stock if the order was CONFIRMED
-        if (order.getStatus() == OrderStatus.CONFIRMED) {
-            for (OrderItem item : order.getOrderItems()) {
-                Product product = item.getProduct();
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            }
+        // Restore stock when order is cancelled
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -339,8 +342,16 @@ Order savedOrder = orderRepository.save(order);
             return mapToOrderResponse(order);
         }
 
-        // Transition from PENDING -> CONFIRMED (deduct stock)
-        if (oldStatus == OrderStatus.PENDING && newStatus == OrderStatus.CONFIRMED) {
+        // Transition to CANCELLED (restore stock)
+        if (oldStatus != OrderStatus.CANCELLED && newStatus == OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+        // Transition from CANCELLED to PENDING or CONFIRMED (deduct stock)
+        else if (oldStatus == OrderStatus.CANCELLED && (newStatus == OrderStatus.PENDING || newStatus == OrderStatus.CONFIRMED)) {
             for (OrderItem item : order.getOrderItems()) {
                 Product product = item.getProduct();
                 if (product.getStock() < item.getQuantity()) {
@@ -350,14 +361,6 @@ Order savedOrder = orderRepository.save(order);
             for (OrderItem item : order.getOrderItems()) {
                 Product product = item.getProduct();
                 product.setStock(product.getStock() - item.getQuantity());
-                productRepository.save(product);
-            }
-        }
-        // Transition from CONFIRMED -> CANCELLED or CONFIRMED -> PENDING (restore stock)
-        else if (oldStatus == OrderStatus.CONFIRMED && (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.PENDING)) {
-            for (OrderItem item : order.getOrderItems()) {
-                Product product = item.getProduct();
-                product.setStock(product.getStock() + item.getQuantity());
                 productRepository.save(product);
             }
         }
