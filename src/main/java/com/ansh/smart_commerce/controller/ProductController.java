@@ -24,6 +24,14 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<Product>> addProduct(@Valid @RequestBody Product product) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+                !("root".equalsIgnoreCase(authentication.getName()) || 
+                  "root@techheaven.com".equalsIgnoreCase(authentication.getName()) ||
+                  "root@teachheaven.com".equalsIgnoreCase(authentication.getName()))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only root user can create or modify product data", null));
+        }
         Product saved = productService.addProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Product added successfully", saved));
@@ -45,12 +53,28 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Product>> updateProduct(
             @PathVariable long id,
             @Valid @RequestBody Product updatedProduct) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+                !("root".equalsIgnoreCase(authentication.getName()) || 
+                  "root@techheaven.com".equalsIgnoreCase(authentication.getName()) ||
+                  "root@teachheaven.com".equalsIgnoreCase(authentication.getName()))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only root user can create or modify product data", null));
+        }
         return ResponseEntity.ok(
                 ApiResponse.success("Product updated successfully", productService.updateProduct(id, updatedProduct)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable long id) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+                !("root".equalsIgnoreCase(authentication.getName()) || 
+                  "root@techheaven.com".equalsIgnoreCase(authentication.getName()) ||
+                  "root@teachheaven.com".equalsIgnoreCase(authentication.getName()))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only root user can create or modify product data", null));
+        }
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.success("Product deleted successfully", null));
     }

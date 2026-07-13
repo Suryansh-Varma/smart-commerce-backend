@@ -55,4 +55,12 @@ public class OrderController {
                 .build());
         return new ResponseEntity<>(pdfBytes, headers, org.springframework.http.HttpStatus.OK);
     }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam String status) {
+        return ResponseEntity.ok(
+                ApiResponse.success("Order status updated successfully", orderService.updateOrderStatus(orderId, status)));
+    }
 }

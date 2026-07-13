@@ -42,4 +42,9 @@ public class CouponController {
         couponService.deactivateCoupon(couponId);
         return ResponseEntity.ok(ApiResponse.success("Coupon deactivated", null));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<com.ansh.smart_commerce.entity.Coupon>>> getAllCoupons() {
+        return ResponseEntity.ok(ApiResponse.success("Coupons retrieved successfully", couponService.getAllCoupons()));
+    }
 }

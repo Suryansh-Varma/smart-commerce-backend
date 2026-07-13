@@ -107,9 +107,6 @@ for (CartItem cartItem : cartItems) {
 
     Product product = cartItem.getProduct();
 
-    product.setStock(product.getStock() - cartItem.getQuantity());
-    productRepository.save(product);
-
     double unitPrice = product.getCost();
 
     subtotal += unitPrice * cartItem.getQuantity();
@@ -208,9 +205,6 @@ Order savedOrder = orderRepository.save(order);
                 throw new InsufficientStockException(product.getName(), requestedQty, product.getStock());
             }
 
-            product.setStock(product.getStock() - requestedQty);
-            productRepository.save(product);
-
             double unitPrice = product.getCost();
             double subtotal = unitPrice * requestedQty;
             total += subtotal;
@@ -260,6 +254,11 @@ Order savedOrder = orderRepository.save(order);
     public List<OrderResponse> getOrderHistory(Long userId) {
         User user = securityHelper.getCurrentUser();
         log.info("Fetching order history for user {}", user.getId());
+        if ("root".equalsIgnoreCase(user.getEmail()) || "root@techheaven.com".equalsIgnoreCase(user.getEmail()) || "root@teachheaven.com".equalsIgnoreCase(user.getEmail())) {
+            return orderRepository.findAll().stream()
+                    .map(this::mapToOrderResponse)
+                    .toList();
+        }
         return orderRepository.findByUser(user).stream()
                 .map(this::mapToOrderResponse)
                 .toList();
@@ -275,7 +274,7 @@ Order savedOrder = orderRepository.save(order);
                     return new OrderNotFoundException(orderId);
                 });
 
-        if (order.getUser().getId() != user.getId()) {
+        if (!("root".equalsIgnoreCase(user.getEmail()) || "root@techheaven.com".equalsIgnoreCase(user.getEmail()) || "root@teachheaven.com".equalsIgnoreCase(user.getEmail())) && order.getUser().getId() != user.getId()) {
             throw new IllegalArgumentException("You do not own this order");
         }
 
@@ -289,25 +288,76 @@ Order savedOrder = orderRepository.save(order);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        if (order.getUser().getId() != user.getId()) {
+        if (!("root".equalsIgnoreCase(user.getEmail()) || "root@techheaven.com".equalsIgnoreCase(user.getEmail()) || "root@teachheaven.com".equalsIgnoreCase(user.getEmail())) && order.getUser().getId() != user.getId()) {
             throw new IllegalArgumentException("You do not own this order");
         }
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            log.warn("Cancel rejected — order {} is in status {}", orderId, order.getStatus());
-            throw new RuntimeException(
-                    "Order " + orderId + " cannot be cancelled. Current status: " + order.getStatus());
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            log.warn("Cancel rejected — order {} is already cancelled", orderId);
+            throw new RuntimeException("Order " + orderId + " is already cancelled.");
         }
 
-        for (OrderItem item : order.getOrderItems()) {
-            Product product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
+        // Only restore stock if the order was CONFIRMED
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
         }
 
         order.setStatus(OrderStatus.CANCELLED);
         Order saved = orderRepository.save(order);
-        log.info("Order {} cancelled and stock restored", orderId);
+        log.info("Order {} cancelled successfully", orderId);
+        return mapToOrderResponse(saved);
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, String statusStr) {
+        User user = securityHelper.getCurrentUser();
+        log.info("Updating order {} status to {} by user {}", orderId, statusStr, user.getId());
+        
+        if (!("root".equalsIgnoreCase(user.getEmail()) || "root@techheaven.com".equalsIgnoreCase(user.getEmail()) || "root@teachheaven.com".equalsIgnoreCase(user.getEmail()))) {
+            throw new IllegalArgumentException("Only root administrator can update order status");
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = OrderStatus.valueOf(statusStr.toUpperCase());
+
+        if (oldStatus == newStatus) {
+            return mapToOrderResponse(order);
+        }
+
+        // Transition from PENDING -> CONFIRMED (deduct stock)
+        if (oldStatus == OrderStatus.PENDING && newStatus == OrderStatus.CONFIRMED) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                if (product.getStock() < item.getQuantity()) {
+                    throw new InsufficientStockException(product.getName(), item.getQuantity(), product.getStock());
+                }
+            }
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() - item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+        // Transition from CONFIRMED -> CANCELLED or CONFIRMED -> PENDING (restore stock)
+        else if (oldStatus == OrderStatus.CONFIRMED && (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.PENDING)) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        order.setStatus(newStatus);
+        Order saved = orderRepository.save(order);
+        log.info("Order {} status updated to {}", orderId, newStatus);
+        
         return mapToOrderResponse(saved);
     }
 

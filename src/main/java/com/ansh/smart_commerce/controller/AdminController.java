@@ -19,6 +19,14 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || 
+                !("root".equalsIgnoreCase(authentication.getName()) || 
+                  "root@techheaven.com".equalsIgnoreCase(authentication.getName()) || 
+                  "root@teachheaven.com".equalsIgnoreCase(authentication.getName()))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Access Denied: Only root administrator can access this panel", null));
+        }
         return ResponseEntity.ok(
                 ApiResponse.success("Dashboard data retrieved", adminService.getDashboard()));
     }

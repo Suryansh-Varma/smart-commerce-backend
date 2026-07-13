@@ -80,4 +80,10 @@ public class CouponService {
         coupon.setActive(false);
         couponRepository.save(coupon);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Coupon> getAllCoupons() {
+        log.info("Fetching all coupons");
+        return couponRepository.findAll();
+    }
 }
